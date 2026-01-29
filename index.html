@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Mi Rutina de Gym</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+            touch-action: manipulation;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .day-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .day-btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1em;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .day-btn:active {
+            transform: scale(0.95);
+        }
+
+        .day-btn.active {
+            background: #764ba2;
+            color: white;
+        }
+
+        .routine-content {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+
+        .routine-section {
+            display: none;
+        }
+
+        .routine-section.active {
+            display: block;
+        }
+
+        .block {
+            margin-bottom: 25px;
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+        }
+
+        .block-title {
+            font-size: 1.2em;
+            color: #667eea;
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        .exercise-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 12px;
+            margin-bottom: 8px;
+            background: #f7f7f7;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            min-height: 60px;
+        }
+
+        .exercise-item:active {
+            background: #efefef;
+        }
+
+        .exercise-item.completed {
+            background: #d4edda;
+            opacity: 0.7;
+        }
+
+        .exercise-item.completed .exercise-text {
+            text-decoration: line-through;
+        }
+
+        .exercise-text {
+            flex: 1;
+            font-size: 1em;
+            color: #333;
+            padding-right: 10px;
+        }
+
+        .set-checkboxes {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .set-checkbox {
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            accent-color: #667eea;
+            flex-shrink: 0;
+        }
+
+        .timer-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+
+        .timer-container h2 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .timer-display {
+            font-size: 3.5em;
+            font-weight: bold;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .timer-btn {
+            padding: 12px 20px;
+            border: 2px solid white;
+            border-radius: 8px;
+            background: transparent;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1em;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .timer-btn:active {
+            transform: scale(0.95);
+            background: white;
+            color: #667eea;
+        }
+
+        .timer-presets {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .preset-btn {
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 6px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.95em;
+            font-weight: bold;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .preset-btn:active {
+            background: rgba(255,255,255,0.4);
+            transform: scale(0.95);
+        }
+
+        .reset-btn {
+            display: block;
+            margin: 20px auto 0;
+            padding: 15px 30px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .reset-btn:active {
+            background: #c82333;
+            transform: scale(0.95);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 35px;
+            background: #e9ecef;
+            border-radius: 17px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .timer-display {
+                font-size: 3em;
+            }
+
+            .routine-content {
+                padding: 15px;
+            }
+
+            .exercise-text {
+                font-size: 0.95em;
+            }
+
+            .set-checkbox {
+                width: 32px;
+                height: 32px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .timer-display {
+                font-size: 2.5em;
+            }
+            
+            .timer-presets {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💪 Mi Rutina de Gym</h1>
+        
+        <div class="timer-container">
+            <h2>⏱️ Temporizador</h2>
+            <div class="timer-display" id="timerDisplay">00:00</div>
+            <div class="timer-controls">
+                <button class="timer-btn" id="startBtn">▶️ Iniciar</button>
+                <button class="timer-btn" id="pauseBtn" style="display:none;">⏸️ Pausar</button>
+                <button class="timer-btn" id="resetTimerBtn">🔄 Reiniciar</button>
+            </div>
+            <div class="timer-presets">
+                <button class="preset-btn" data-seconds="30">30s</button>
+                <button class="preset-btn" data-seconds="45">45s</button>
+                <button class="preset-btn" data-seconds="60">1min</button>
+                <button class="preset-btn" data-seconds="90">1:30</button>
+                <button class="preset-btn" data-seconds="120">2min</button>
+                <button class="preset-btn" data-seconds="180">3min</button>
+            </div>
+        </div>
+
+        <div class="day-selector">
+            <button class="day-btn active" data-day="lun-mier-vier">LUN - MIÉ - VIE</button>
+            <button class="day-btn" data-day="mar-jue">MAR - JUE</button>
+        </div>
+
+        <div class="routine-content">
+            <div id="lun-mier-vier" class="routine-section active">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-lun" style="width: 0%">0%</div>
+                </div>
+
+                <div class="block">
+                    <div class="block-title">🔥 ENTRADA EN CALOR x2</div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">10 Sentadillas</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">30 Plancha dinámica</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Abs cortitos</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-title">💥 ABS x3</div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Cortitos</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">40 Plancha dinámica</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Twist / Leg raise</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Bici</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-title">🏋️ BLOQUE 1 x3</div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">15 Peso muerto</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">15 Sentadilla sumo</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">15 Sentadilla pulse</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">15/15 Estocada cruz</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-title">🔥 BLOQUE 2 x3</div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Hip thrust</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">40 Plancha dinámica</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Fondos</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Tijera</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-title">💪 BLOQUE 3 x3</div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">25 Patada lat banda</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Bícep</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20/20 Cangrejo</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Puente glúteos</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="mar-jue" class="routine-section">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-mar" style="width: 0%">0%</div>
+                </div>
+
+                <div class="block">
+                    <div class="block-title">🔥 ENTRADA EN CALOR x2</div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">40 Plancha dinámica</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Abs cortitos</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">15 Sentadilla pulse</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-title">🍑 GAP x3</div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Patada up con banda</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Remo con banda</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Puente de glúteos</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Sentadillas</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Peso muerto</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Teateps con banda</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Abs bolita</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Estocadas classic</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Bícep</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                    <div class="exercise-item">
+                        <span class="exercise-text">20 Abrir/cerrar con banda</span>
+                        <div class="set-checkboxes">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                            <input type="checkbox" class="checkbox set-checkbox">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="reset-btn" id="resetDayBtn">🔄 Reiniciar Día</button>
+        </div>
+    </div>
+
+    <script>
+        let timerInterval = null;
+        let remainingTime = 0;
+        let isRunning = false;
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('timerDisplay').textContent = formatTime(remainingTime);
+        }
+
+        function setTimer(seconds) {
+            remainingTime = seconds;
+            updateTimerDisplay();
+            if (isRunning) {
+                pauseTimer();
+            }
+        }
+
+        function startTimer() {
+            if (remainingTime === 0) {
+                setTimer(60);
+            }
+            
+            isRunning = true;
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('pauseBtn').style.display = 'inline-block';
+            
+            timerInterval = setInterval(() => {
+                remainingTime--;
+                updateTimerDisplay();
+                
+                if (remainingTime <= 0) {
+                    pauseTimer();
+                    playSound();
+                    alert('⏰ ¡Tiempo terminado!');
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            isRunning = false;
+            clearInterval(timerInterval);
+            document.getElementById('startBtn').style.display = 'inline-block';
+            document.getElementById('pauseBtn').style.display = 'none';
+        }
+
+        function resetTimerFunc() {
+            pauseTimer();
+            remainingTime = 0;
+            updateTimerDisplay();
+        }
+
+        function playSound() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProgress('lun-mier-vier');
+            loadProgress('mar-jue');
+
+            document.querySelectorAll('.day-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const day = this.getAttribute('data-day');
+                    showDay(day);
+                });
+            });
+
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const seconds = parseInt(this.getAttribute('data-seconds'));
+                    setTimer(seconds);
+                });
+            });
+
+            document.getElementById('startBtn').addEventListener('click', startTimer);
+            document.getElementById('pauseBtn').addEventListener('click', pauseTimer);
+            document.getElementById('resetTimerBtn').addEventListener('click', resetTimerFunc);
+            document.getElementById('resetDayBtn').addEventListener('click', resetDay);
+
+            document.querySelectorAll('.checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const section = this.closest('.routine-section');
+                    const day = section.id;
+                    updateProgress(day);
+                });
+            });
+        });
+
+        function showDay(day) {
+            document.querySelectorAll('.routine-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            document.getElementById(day).classList.add('active');
+            
+            document.querySelectorAll('.day-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-day') === day) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            loadProgress(day);
+        }
+
+        function updateProgress(day) {
+            const section = document.getElementById(day);
+            const checkboxes = section.querySelectorAll('.checkbox');
+            const items = section.querySelectorAll('.exercise-item');
+            
+            let completed = 0;
+            checkboxes.forEach((checkbox) => {
+                if (checkbox.checked) {
+                    completed++;
+                }
+            });
+            
+            items.forEach((item) => {
+                const itemCheckboxes = item.querySelectorAll('.checkbox');
+                const allChecked = Array.from(itemCheckboxes).every(cb => cb.checked);
+                if (allChecked && itemCheckboxes.length > 0) {
+                    item.classList.add('completed');
+                } else {
+                    item.classList.remove('completed');
+                }
+            });
+            
+            const percentage = Math.round((completed / checkboxes.length) * 100);
+            const progressId = day === 'lun-mier-vier' ? 'progress-lun' : 'progress-mar';
+            const progressBar = document.getElementById(progressId);
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = percentage + '%';
+            
+            saveProgress(day);
+        }
+
+        function saveProgress(day) {
+            const section = document.getElementById(day);
+            const checkboxes = section.querySelectorAll('.checkbox');
+            const progress = [];
+            
+            checkboxes.forEach(checkbox => {
+                progress.push(checkbox.checked);
+            });
+            
+            try {
+                localStorage.setItem(day, JSON.stringify(progress));
+            } catch (e) {
+                console.log('LocalStorage not available');
+            }
+        }
+
+        function loadProgress(day) {
+            try {
+                const saved = localStorage.getItem(day);
+                if (saved) {
+                    const progress = JSON.parse(saved);
+                    const section = document.getElementById(day);
+                    const checkboxes = section.querySelectorAll('.checkbox');
+                    
+                    checkboxes.forEach((checkbox, index) => {
+                        if (progress[index]) {
+                            checkbox.checked = true;
+                        }
+                    });
+                    
+                    updateProgress(day);
+                }
+            } catch (e) {
+                console.log('LocalStorage not available');
+            }
+        }
+
+        function resetDay() {
+            const activeSection = document.querySelector('.routine-section.active');
+            const day = activeSection.id;
+            
+            if (confirm('¿Estás seguro de que quieres reiniciar el progreso de hoy?')) {
+                const checkboxes = activeSection.querySelectorAll('.checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                
+                updateProgress(day);
+            }
+        }
+    </script>
+</body>
+</html>
