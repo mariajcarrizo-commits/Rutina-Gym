@@ -298,8 +298,9 @@
 <body>
   <!-- 🔊 AUDIO (ya lo tenés en assets/alarm.mp3) -->
   <audio id="alarmSound" preload="auto">
-    <source src="assets/alarm.mp3" type="audio/mpeg">
-  </audio>
+  <source src="assets/alarm.mp3" type="audio/mpeg">
+  <source src="assets/alarm.m4a" type="audio/mp4">
+</audio>
 
   <div class="container">
     <h1>MAJO-FIT 💋</h1>
@@ -589,12 +590,21 @@
     }
 
     function playSound() {
-      const audio = document.getElementById("alarmSound");
-      if (!audio) return;
+  const audio = document.getElementById("alarmSound");
+  if (!audio) return;
 
+  audio.currentTime = 0;
+
+  audio.play().then(() => {
+    // ok
+  }).catch(() => {
+    // Segundo intento (iPhone a veces falla el primero)
+    setTimeout(() => {
       audio.currentTime = 0;
       audio.play().catch(() => {});
-    }
+    }, 200);
+  });
+}
 
     function startTimer() {
       if (remainingTime === 0) setTimer(60);
@@ -883,15 +893,18 @@
 
       // iPhone audio unlock
       document.getElementById("enableSoundBtn").addEventListener("click", async () => {
-        const audio = document.getElementById("alarmSound");
-        audio.currentTime = 0;
+  const audio = document.getElementById("alarmSound");
+  audio.currentTime = 0;
 
-        try {
-          await audio.play();
-          audio.pause();
-          audio.currentTime = 0;
-        } catch (e) {}
-      });
+  try {
+    await audio.play();
+    audio.pause();
+    audio.currentTime = 0;
+    document.getElementById("enableSoundBtn").textContent = "✅ Sonido activado";
+  } catch (e) {
+    document.getElementById("enableSoundBtn").textContent = "⚠️ Subí volumen / sacá silencio";
+  }
+});
 
       // Tracking buttons
       document.querySelectorAll(".save-btn").forEach(btn => {
